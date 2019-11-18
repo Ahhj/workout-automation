@@ -123,3 +123,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Google API credentials
+credentials.json
+token.pickle
+
+# VScode project settings.
+.vscode/settings.json
