@@ -1,17 +1,10 @@
-from googleapiclient.discovery import build
-
 
 class SheetReader:
-    def __init__(self, authenticator):
-        self.authenticator = authenticator
+    def __init__(self, service_provider):
+        self.service_provider = service_provider
 
     def read(self, sheet_id, sheet_range=None):
-        creds = self.authenticator.get_credentials()
-        service = build('sheets', 'v4', credentials=creds)
-
-        # Call the Sheets API
-        sheet = service.spreadsheets()
-        result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                    range=SAMPLE_RANGE_NAME).execute()
+        result = self.service_provider.sheets_service.values().get(
+            spreadsheetId=sheet_id, range=sheet_range).execute()
         values = result.get('values', [])
         return values
