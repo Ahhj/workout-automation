@@ -1,8 +1,12 @@
+from pathlib import Path
 
 from .authenticator import Authenticator
 from .service_provider import ServiceProvider
 from .sheet_reader import SheetReader
+from .sheet_writer import SheetWriter
 from .sheet_creator import SheetCreator
+
+
 
 # The ID and range of a sample spreadsheet.
 SAMPLE_SPREADSHEET_ID = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'
@@ -14,11 +18,12 @@ def main():
     Shows basic usage of the Sheets API.
     Prints values from a sample spreadsheet.
     """
-    auth = Authenticator('credentials.json', 'token.pickle')
+    auth = Authenticator(Path('credentials.json'), Path('token.pickle'))
     service_provider = ServiceProvider(auth)
 
     reader = SheetReader(service_provider)
-    creater = SheetCreator(service_provider)
+    creator = SheetCreator(service_provider)
+    writer = SheetWriter(service_provider)
 
     values = reader.read(SAMPLE_SPREADSHEET_ID, sheet_range=SAMPLE_RANGE_NAME)
 

@@ -4,13 +4,13 @@ class SheetCreator:
         self.service_provider = service_provider
 
     def create(self, sheet_name):
-        config = {
+        body = {
             'properties': {
                 'title': sheet_name
             }
         }
         spreadsheet = self.service_provider.sheets_service.create(
-            body=spreadsheet, 
+            body=body, 
             fields='spreadsheetId'
         ).execute()
         return spreadsheet.get('spreadsheetId')

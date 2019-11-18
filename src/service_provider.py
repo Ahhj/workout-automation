@@ -11,7 +11,7 @@ class ServiceProvider:
         return self._sheets_service
 
     def _get_sheets_service(self):
-        creds = self.authenticator.get_credentials()
+        creds = self.authenticator.credentials
         resource = build('sheets', 'v4', credentials=creds)
         # Call the Sheets API
         sheets_service = resource.spreadsheets()
