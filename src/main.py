@@ -2,7 +2,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 import pandas as pd
-
+# TODO: pandas pluging for gspread
 
 scope = [
     'https://spreadsheets.google.com/feeds', 
@@ -11,13 +11,14 @@ scope = [
 
 credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
 
+# TODO: clarify naming convention e.g. training/block/sessions
 session_template_name = 'session_template'
 program_name = 'powerbuilding1'
 block = 1
 
 client = gspread.authorize(credentials)
 
-# Program
+# Program # TODO: refactor into class
 program = client.open(program_name)
 program_summary = dict(program.worksheet('Summary').get_all_values())
 program_df = pd.DataFrame(program.worksheet('Program').get_all_records())
@@ -47,6 +48,8 @@ def generate_session(week, session):
                 slot1_worksheet_id, insert_sheet_index=slot, new_sheet_name=f'Slot{slot}')
 
         program_slot = program_df.loc[week, session, slot].to_dict()
+
+        # TODO: remove dependency on template sheet, create programmatically
         slot_worksheet.update_acell('B1', program_slot['Exercise'])
         slot_worksheet.update_acell('B2', program_slot['Prescription'])
         slot_worksheet.update_acell('B3', program_slot['Notes'])
