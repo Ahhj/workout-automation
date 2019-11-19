@@ -1,40 +1,59 @@
-from pathlib import Path
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
-from .authenticator import Authenticator
-from .service_provider import ServiceProvider
-from .sheet_reader import SheetReader
-from .sheet_writer import SheetWriter
-from .sheet_creator import SheetCreator
+import pandas as pd
 
 
+scope = [
+    'https://spreadsheets.google.com/feeds', 
+    'https://www.googleapis.com/auth/drive'
+]
 
-# The ID and range of a sample spreadsheet.
-SAMPLE_SPREADSHEET_ID = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'
-SAMPLE_RANGE_NAME = 'Class Data!A2:E'
+credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
 
+session_template_name = 'session_template'
+program_name = 'powerbuilding1'
+block = 1
 
-def main():
-    """
-    Shows basic usage of the Sheets API.
-    Prints values from a sample spreadsheet.
-    """
-    auth = Authenticator(Path('credentials.json'), Path('token.pickle'))
-    service_provider = ServiceProvider(auth)
+client = gspread.authorize(credentials)
 
-    reader = SheetReader(service_provider)
-    creator = SheetCreator(service_provider)
-    writer = SheetWriter(service_provider)
+# Program
+program = client.open(program_name)
+program_summary = dict(program.worksheet('Summary').get_all_values())
+program_df = pd.DataFrame(program.worksheet('Program').get_all_records())
+program_df.set_index(['Week', 'Session', 'Slot'], inplace=True)
 
-    values = reader.read(SAMPLE_SPREADSHEET_ID, sheet_range=SAMPLE_RANGE_NAME)
+# Parse program header
+num_weeks = int(program_summary['NumberOfWeeks'])
+sessions_per_week = int(program_summary['SessionsPerWeek'])
+slots_per_session = int(program_summary['SlotsPerSession'])
+gpp_slots_per_session = int(program_summary['GppSlotsPerSession'])
 
-    if not values:
-        print('No data found.')
-    else:
-        print('Name, Major:')
-        for row in values:
-            # Print columns A and E, which correspond to indices 0 and 4.
-            print('%s, %s' % (row[0], row[4]))
+# Session template
+template = client.open(session_template_name)
 
+def generate_session(week, session):
+    title = f'{block}/{program_name}_{week}_{session}_yyyyMMdd'
+    session_spreadsheet = client.copy(
+        template.id, title, copy_permissions=True)
 
-if __name__ == '__main__':
-    main()
+    for slot in range(1, slots_per_session+1):
+        if slot == 1:
+            slot_worksheet = session_spreadsheet.worksheet('Slot1')
+        else:
+            # Duplicate slot
+            slot1_worksheet_id = session_spreadsheet.worksheet('Slot1').id
+            slot_worksheet = session_spreadsheet.duplicate_sheet(
+                slot1_worksheet_id, insert_sheet_index=slot, new_sheet_name=f'Slot{slot}')
+
+        program_slot = program_df.loc[week, session, slot].to_dict()
+        slot_worksheet.update_acell('B1', program_slot['Exercise'])
+        slot_worksheet.update_acell('B2', program_slot['Prescription'])
+        slot_worksheet.update_acell('B3', program_slot['Notes'])
+
+generate_session(7, 3)
+
+# Generate program session
+# for week in range(1, num_weeks+1):
+#     for session in range(1, sessions_per_week+1):
+#         generate_session(week, session)
