@@ -1,22 +1,16 @@
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-
 import pandas as pd
+from gspread_pandas import Spread, Client
+
+from . import authenticate
+
+client = Client()
+
 # TODO: pandas pluging for gspread
-
-scope = [
-    'https://spreadsheets.google.com/feeds', 
-    'https://www.googleapis.com/auth/drive'
-]
-
-credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
 
 # TODO: clarify naming convention e.g. training/block/sessions
 session_template_name = 'session_template'
 program_name = 'powerbuilding1'
 block = 1
-
-client = gspread.authorize(credentials)
 
 # Program # TODO: refactor into class
 program = client.open(program_name)
