@@ -1,3 +1,5 @@
+from gspread_pandas import Spread
+
 
 class SessionGenerator:
     def __init__(self, client, training_block, session_template):
@@ -9,9 +11,9 @@ class SessionGenerator:
         block_number = self.training_block.block_number
         program_name = self.training_block.program_name
 
-        title = f'{block_number}/{program_name}_{program_week}_{week_session}_yyyyMMdd'
+        sheet_name = f'{block_number}_{program_name}_{program_week}_{week_session}_yyyyMMdd'
         session_spreadsheet = self.client.copy(
-            self.session_template.id, title, copy_permissions=True)
+            self.session_template.id, sheet_name)
 
         program_slots = self.training_block.get_slots(program_week, week_session)
 
@@ -29,3 +31,5 @@ class SessionGenerator:
             slot_worksheet.update_acell('B1', slot['Exercise'])
             slot_worksheet.update_acell('B2', slot['Prescription'])
             slot_worksheet.update_acell('B3', slot['Notes'])
+
+        self.client.move_file(session_spreadsheet.id, self.training_block.path, create=False)

@@ -131,3 +131,5 @@ token.pickle
 # VScode project settings.
 .vscode/settings.json
 config/google_secret.json
+config/google_secret2.json
+config/creds/default
