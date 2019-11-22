@@ -1,3 +1,6 @@
+from retrying import retry
+
+from gspread.exceptions import APIError
 from gspread_pandas import Spread
 
 
@@ -19,7 +22,8 @@ class SessionGenerator:
                 if not self._session_exists(week, session):
                     self.generate_single(week, session)
 
-    def generate_single(self, program_week, week_session):
+    @retry(retry_on_exception=APIError, wait_fixed=1e4)  # Wait 10 seconds before hitting API again
+    def generate_single(self, program_week, week_session, overwrite=False):
         '''
         Create file for session in training block
         '''
