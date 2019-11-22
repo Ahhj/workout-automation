@@ -1,5 +1,8 @@
 
 class TrainingProgram:
+    '''
+    Prescribed training routine
+    '''
     def __init__(self, name, duration, sessions_per_week, slots_per_session, data=None):
         self.name = name
         self.duration = duration
