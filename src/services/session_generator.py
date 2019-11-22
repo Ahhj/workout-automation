@@ -35,7 +35,7 @@ class SessionGenerator:
         sheet_name = f'{block_number}_{program_name}_{program_week}_{week_session}_yyyyMMdd'
 
         if self._session_exists(sheet_name) and not overwrite:
-            print(f'Session {sheet_name} exists and overwrite=False, skipping')
+            print(f'Session ({program_week}, {week_session}) exists and overwrite=False, skipping')
             return
 
         session_spreadsheet = self.client.copy(self.session_template.id, sheet_name)
@@ -61,7 +61,7 @@ class SessionGenerator:
         print(f'Created session: {sheet_name}')
 
     def _session_exists(self, session_name):
-        return session_name in self._created_sessions
+        return bool(list(filter(lambda s: re.match(session_name.rstrip('_yyyyMMdd'), s), self._created_sessions)))
 
     def _get_sessions(self):
         files = self.client.list_spreadsheet_files()
