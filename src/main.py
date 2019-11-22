@@ -11,7 +11,7 @@ client = Client()
 # TODO: clarify naming convention e.g. training/block/sessions
 session_template_name = 'session_template'
 program_name = 'powerbuilding1'
-block_number = 1
+block_number = 2
 
 # TODO: cleanup getting data into DataFrames
 program = client.open(program_name)
