@@ -1,3 +1,5 @@
+import re
+
 from retrying import retry
 
 from gspread.exceptions import APIError
@@ -12,15 +14,15 @@ class SessionGenerator:
         self.client = client
         self.training_block = training_block
         self.session_template = session_template
+        self._created_sessions = self._get_sessions()
 
-    def generate_block(self):
+    def generate_block(self, overwrite=False):
         '''
         Create files for all sessions in training block
         '''
         for week in range(1, self.training_block.duration+1):
             for session in range(1, self.training_block.sessions_per_week+1):
-                if not self._session_exists(week, session):
-                    self.generate_single(week, session)
+                self.generate_single(week, session, overwrite=overwrite)
 
     @retry(retry_on_exception=APIError, wait_fixed=1e4)  # Wait 10 seconds before hitting API again
     def generate_single(self, program_week, week_session, overwrite=False):
@@ -31,8 +33,12 @@ class SessionGenerator:
         program_name = self.training_block.program_name
 
         sheet_name = f'{block_number}_{program_name}_{program_week}_{week_session}_yyyyMMdd'
-        session_spreadsheet = self.client.copy(self.session_template.id, sheet_name)
 
+        if self._session_exists(sheet_name) and not overwrite:
+            print(f'Session {sheet_name} exists and overwrite=False, skipping')
+            return
+
+        session_spreadsheet = self.client.copy(self.session_template.id, sheet_name)
         program_slots = self.training_block.get_slots(program_week, week_session)
 
         for i, slot in enumerate(program_slots):
@@ -51,6 +57,18 @@ class SessionGenerator:
             slot_worksheet.update_acell('B3', slot['Notes'])
 
         self.client.move_file(session_spreadsheet.id, self.training_block.path, create=True)
+        self._created_sessions.append(sheet_name)
+        print(f'Created session: {sheet_name}')
 
-    def _session_exists(self, program_week, week_session):
-        return False  # TODO: implement.
+    def _session_exists(self, session_name):
+        return session_name in self._created_sessions
+
+    def _get_sessions(self):
+        files = self.client.list_spreadsheet_files()
+        session_files = filter(lambda d: re.match(self.session_name_pattern, d['name']), files)
+        session_file_names = map(lambda d: d['name'], session_files)
+        return list(session_file_names)
+
+    @property
+    def session_name_pattern(self):
+        return f'{self.training_block.block_number}_{self.training_block.program_name}'
