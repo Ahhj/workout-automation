@@ -24,7 +24,8 @@ class SessionGenerator:
             for session in range(1, self.block.sessions_per_week+1):
                 self.generate_single(week, session, overwrite=overwrite)
 
-    @retry(retry_on_exception=APIError, wait_fixed=1e4)  # Wait 10 seconds before hitting API again
+    # Wait 10 seconds before hitting API again
+    @retry(retry_on_exception=lambda e: isinstance(e, APIError), wait_fixed=1e4)
     def generate_single(self, program_week, week_session, overwrite=False):
         '''
         Create file for session in training block
