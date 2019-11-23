@@ -1,9 +1,9 @@
 import pandas as pd
 from gspread_pandas import Spread, Client
 
-from . import authenticate
 
 from .models import TrainingProgram, TrainingBlock
+from . import configure
 from .services import SessionGenerator
 
 client = Client()
