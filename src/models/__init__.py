@@ -1,2 +1,2 @@
-from .training_program import TrainingProgram
-from .training_block import TrainingBlock
+from .program import Program
+from .block import Block

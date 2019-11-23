@@ -1,5 +1,5 @@
 
-class TrainingBlock:
+class Block:
     '''
     Block of training, either in progress or completed
     '''

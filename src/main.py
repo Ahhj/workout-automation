@@ -2,7 +2,7 @@ import pandas as pd
 from gspread_pandas import Spread, Client
 
 
-from .models import TrainingProgram, TrainingBlock
+from .models import Program, Block
 from . import configure
 from .services import SessionGenerator
 
@@ -26,11 +26,11 @@ gpp_slots_per_session = int(program_summary['GppSlotsPerSession'])
 program_data = pd.DataFrame(program.worksheet('Program').get_all_records())
 program_data.set_index(['Week', 'Session', 'Slot'], inplace=True)
 
-training_program = TrainingProgram(program_name, num_weeks, sessions_per_week, slots_per_session, data=program_data)
-training_block = TrainingBlock(block_number, training_program, root_path='Training/Blocks')
+program = Program(program_name, num_weeks, sessions_per_week, slots_per_session, data=program_data)
+block = Block(block_number, program, root_path='Training/Blocks')
 
 # Session template
 session_template = client.open(session_template_name)
 
-session_generator = SessionGenerator(client, training_block, session_template)
+session_generator = SessionGenerator(client, block, session_template)
 session_generator.generate_block()
