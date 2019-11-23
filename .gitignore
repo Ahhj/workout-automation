@@ -134,3 +134,4 @@ config/google_secret.json
 config/google_secret2.json
 config/creds/default
 .vscode/launch.json
+sheets.googleapis.com-python.json
